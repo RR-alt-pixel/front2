@@ -16,6 +16,9 @@
     }
     h1 {
       margin-bottom: 20px;
+      color: var(--tg-theme-link-color, #00bcd4);
+      font-size: 28px;
+      letter-spacing: 1px;
     }
     button {
       width: 100%;
@@ -81,6 +84,7 @@
 
   <script>
     const API_BASE_URL = "https://test-2-tkqp.onrender.com";
+
     const startScreen = document.getElementById('startScreen');
     const searchScreen = document.getElementById('searchScreen');
     const startButton = document.getElementById('startButton');
@@ -89,7 +93,7 @@
     const queryInput = document.getElementById('queryInput');
     const resultOutput = document.getElementById('resultOutput');
 
-    // Инициализация Telegram Mini App
+    // Telegram инициализация
     if (window.Telegram && window.Telegram.WebApp) {
       Telegram.WebApp.ready();
       Telegram.WebApp.expand();
@@ -100,9 +104,16 @@
       startButton.disabled = true;
       startMessage.style.display = 'block';
       startMessage.className = 'result';
-      startMessage.innerHTML = 'Проверка доступа...';
+      startMessage.innerHTML = '🔍 Проверка доступа...';
 
-      let userId = Telegram?.WebApp?.initDataUnsafe?.user?.id;
+      // ждем Telegram ID
+      let userId = null;
+      for (let i = 0; i < 10; i++) {
+        userId = Telegram?.WebApp?.initDataUnsafe?.user?.id;
+        if (userId) break;
+        await new Promise(r => setTimeout(r, 400));
+      }
+
       if (!userId) {
         startMessage.className = 'error';
         startMessage.innerHTML = 'Ошибка: не удалось получить ваш Telegram ID.';
@@ -111,6 +122,7 @@
       }
 
       try {
+        // Проверяем доступ через API поиска (с фиктивным запросом)
         const res = await fetch(`${API_BASE_URL}/api/search`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -126,17 +138,21 @@
 
         if (!res.ok) {
           startMessage.className = 'error';
-          startMessage.innerHTML = 'Ошибка проверки доступа.';
+          startMessage.innerHTML = 'Ошибка при проверке доступа.';
           startButton.disabled = false;
           return;
         }
 
-        // ✅ если всё ок — показываем экран поиска
-        startScreen.style.display = 'none';
-        searchScreen.style.display = 'block';
+        // ✅ если всё ок — переходим к экрану поиска
+        startMessage.innerHTML = '✅ Доступ подтверждён.';
+        setTimeout(() => {
+          startScreen.style.display = 'none';
+          searchScreen.style.display = 'block';
+        }, 700);
+
       } catch (err) {
         startMessage.className = 'error';
-        startMessage.innerHTML = 'Ошибка сети при проверке.';
+        startMessage.innerHTML = '⚠️ Ошибка сети. Попробуйте позже.';
       } finally {
         startButton.disabled = false;
       }
@@ -159,7 +175,7 @@
       }
 
       resultOutput.className = 'result';
-      resultOutput.innerHTML = 'Поиск...';
+      resultOutput.innerHTML = '⏳ Поиск...';
       searchButton.disabled = true;
 
       try {
@@ -172,10 +188,10 @@
 
         if (response.ok) {
           resultOutput.className = 'result';
-          resultOutput.innerHTML = data.result;
+          resultOutput.innerHTML = data.result || 'Нет данных.';
         } else if (response.status === 403) {
           resultOutput.className = 'error';
-          resultOutput.innerHTML = `⛔ Доступ запрещён: ${data.error || ''}`;
+          resultOutput.innerHTML = `⛔ Доступ запрещён.`;
         } else {
           resultOutput.className = 'error';
           resultOutput.innerHTML = `❌ Ошибка сервера: ${data.error || 'Неизвестная ошибка.'}`;
