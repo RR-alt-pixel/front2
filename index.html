@@ -1,278 +1,209 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>HOGWARTS</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #0f1114;
-      color: var(--tg-theme-text-color, #ffffff);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      overflow: hidden;
-    }
+    <meta charset="UTF-8">
+    <title>HOGWARTS</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background-color: var(--tg-theme-bg-color, #0b0b0b);
+            color: var(--tg-theme-text-color, #f0f0f0);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    .container {
-      width: 90%;
-      max-width: 360px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 30px 20px 25px;
-      text-align: center;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeIn 0.8s ease forwards;
-    }
+        h1 {
+            margin-bottom: 20px;
+            color: var(--tg-theme-link-color, #00bcd4);
+        }
 
-    @keyframes fadeIn {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+        input[type="text"] {
+            width: 100%;
+            max-width: 420px;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--tg-theme-hint-color, #333);
+            background-color: var(--tg-theme-secondary-bg-color, #1a1a1a);
+            color: var(--tg-theme-text-color, #fff);
+            box-sizing: border-box;
+            margin-bottom: 12px;
+        }
 
-    h1 {
-      color: #6ea8ff;
-      margin-bottom: 15px;
-      font-size: 26px;
-      letter-spacing: 1px;
-    }
+        button {
+            width: 100%;
+            max-width: 420px;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--tg-theme-button-color, #00bcd4);
+            color: var(--tg-theme-button-text-color, #000);
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
 
-    p {
-      color: #bbb;
-      font-size: 15px;
-      margin-bottom: 20px;
-    }
+        button:disabled {
+            background-color: #444;
+            color: #999;
+            cursor: not-allowed;
+        }
 
-    input[type="text"] {
-      width: 100%;
-      padding: 10px 12px;
-      font-size: 15px;
-      border-radius: 8px;
-      border: 1px solid #3b4252;
-      background-color: rgba(255, 255, 255, 0.1);
-      color: #ffffff;
-      outline: none;
-      margin-bottom: 12px;
-      box-sizing: border-box;
-      transition: border-color 0.2s;
-    }
+        .hidden {
+            display: none;
+        }
 
-    input[type="text"]:focus {
-      border-color: #6ea8ff;
-    }
+        .result, .error {
+            width: 100%;
+            max-width: 420px;
+            margin-top: 15px;
+            padding: 14px;
+            border-radius: 8px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            font-size: 15px;
+        }
 
-    button {
-      width: 100%;
-      padding: 10px 12px;
-      font-size: 15px;
-      border: none;
-      border-radius: 8px;
-      background-color: #4c8bf5;
-      color: #ffffff;
-      cursor: pointer;
-      transition: background-color 0.3s, transform 0.1s;
-    }
+        .result {
+            background: var(--tg-theme-secondary-bg-color, #161616);
+            border: 1px solid var(--tg-theme-hint-color, #333);
+        }
 
-    button:hover {
-      background-color: #5a97ff;
-    }
-
-    button:active {
-      transform: scale(0.98);
-    }
-
-    button:disabled {
-      background-color: #2c2f33;
-      color: #888;
-      cursor: not-allowed;
-    }
-
-    .result, .error {
-      margin-top: 15px;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 14px;
-      white-space: pre-wrap;
-      text-align: left;
-      line-height: 1.4;
-    }
-
-    .result {
-      background-color: rgba(255, 255, 255, 0.05);
-      border-left: 3px solid #4c8bf5;
-    }
-
-    .error {
-      background-color: rgba(255, 50, 50, 0.15);
-      border-left: 3px solid #ff4d4d;
-      color: #ffbaba;
-      text-align: center;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .fade {
-      animation: fadeOut 0.4s forwards;
-    }
-
-    @keyframes fadeOut {
-      to {
-        opacity: 0;
-        transform: translateY(-15px);
-      }
-    }
-  </style>
+        .error {
+            background: #3b0000;
+            color: #ff8a80;
+            border: 1px solid #b00020;
+        }
+    </style>
 </head>
 <body>
-  <div class="container" id="accessContainer">
     <h1>HOGWARTS</h1>
-    <p>Нажмите, чтобы начать проверку доступа.</p>
-    <button id="startButton">НАЧАТЬ</button>
-    <div id="accessMessage"></div>
-  </div>
 
-  <div class="container hidden" id="searchContainer">
-    <h1>HOGWARTS</h1>
-    <input type="text" id="queryInput" placeholder="Введите тут...">
-    <button id="searchButton">ИСКАТЬ</button>
-    <div id="resultOutput"></div>
-  </div>
+    <div id="accessScreen">
+        <button id="startButton">НАЧАТЬ</button>
+        <div id="accessMessage" class="result"></div>
+    </div>
 
-  <script>
-    const API_BASE_URL = "https://test-2-tkqp.onrender.com";
+    <div id="searchScreen" class="hidden">
+        <input id="queryInput" type="text" placeholder="Введите тут...">
+        <button id="searchButton">ИСКАТЬ</button>
+        <div id="resultOutput" class="result"></div>
+    </div>
 
-    const startButton = document.getElementById('startButton');
-    const accessContainer = document.getElementById('accessContainer');
-    const searchContainer = document.getElementById('searchContainer');
-    const accessMessage = document.getElementById('accessMessage');
-    const queryInput = document.getElementById('queryInput');
-    const searchButton = document.getElementById('searchButton');
-    const resultOutput = document.getElementById('resultOutput');
+    <script>
+        const API_BASE_URL = "https://test-2-tkqp.onrender.com";
 
-    if (window.Telegram && window.Telegram.WebApp) {
-      Telegram.WebApp.ready();
-      Telegram.WebApp.expand();
-    }
+        const accessScreen = document.getElementById("accessScreen");
+        const searchScreen = document.getElementById("searchScreen");
+        const startButton = document.getElementById("startButton");
+        const accessMessage = document.getElementById("accessMessage");
+        const queryInput = document.getElementById("queryInput");
+        const searchButton = document.getElementById("searchButton");
+        const resultOutput = document.getElementById("resultOutput");
 
-    // Проверка доступа
-    startButton.addEventListener('click', async () => {
-      startButton.disabled = true;
-      accessMessage.className = 'result';
-      accessMessage.innerHTML = 'Проверка доступа...';
+        // Telegram WebApp init
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+        }
 
-      let userId = null;
-      if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) {
-        userId = Telegram.WebApp.initDataUnsafe.user.id;
-      }
+        function getTelegramId() {
+            try {
+                return Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
+            } catch {
+                return null;
+            }
+        }
 
-      if (!userId) {
-        accessMessage.className = 'error';
-        accessMessage.innerHTML = 'Ошибка: Не удалось получить ваш Telegram ID.';
-        startButton.disabled = false;
-        return;
-      }
+        startButton.addEventListener("click", async () => {
+            startButton.disabled = true;
+            accessMessage.innerHTML = "⏳ Проверка доступа...";
 
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/check_access`, {
-          method: 'POST',
-          mode: 'cors', // важно
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({ telegram_user_id: userId })
+            const userId = getTelegramId();
+            if (!userId) {
+                accessMessage.className = "error";
+                accessMessage.innerHTML = "Ошибка: не удалось получить ваш Telegram ID.";
+                startButton.disabled = false;
+                return;
+            }
+
+            // ⚡ Задержка 500 мс чтобы Telegram успел полностью инициализироваться
+            await new Promise(r => setTimeout(r, 500));
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/check_access`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ telegram_user_id: userId })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.access) {
+                    accessMessage.className = "result";
+                    accessMessage.innerHTML = "✅ Доступ подтверждён.";
+                    setTimeout(() => {
+                        accessScreen.classList.add("hidden");
+                        searchScreen.classList.remove("hidden");
+                    }, 800);
+                } else {
+                    accessMessage.className = "error";
+                    accessMessage.innerHTML = "❌ Нет доступа. Обратитесь к администратору.";
+                }
+            } catch (err) {
+                accessMessage.className = "error";
+                accessMessage.innerHTML = "⚠️ Ошибка сети или API.";
+            } finally {
+                startButton.disabled = false;
+            }
         });
 
-        if (!response.ok) {
-          throw new Error(`Ошибка ${response.status}`);
-        }
+        // Поиск
+        searchButton.addEventListener("click", async () => {
+            const query = queryInput.value.trim();
+            if (!query) {
+                resultOutput.className = "error";
+                resultOutput.innerHTML = "Введите запрос.";
+                return;
+            }
 
-        const data = await response.json();
+            const userId = getTelegramId();
+            searchButton.disabled = true;
+            searchButton.textContent = "ЗАГРУЗКА...";
+            resultOutput.className = "result";
+            resultOutput.innerHTML = "⌛ Выполняется поиск...";
 
-        if (data.access === true) {
-          accessContainer.classList.add('fade');
-          setTimeout(() => {
-            accessContainer.classList.add('hidden');
-            searchContainer.classList.remove('hidden');
-          }, 400);
-        } else {
-          accessMessage.className = 'error';
-          accessMessage.innerHTML = '🚫 Доступ запрещён. Обратитесь к администратору.';
-          startButton.disabled = false;
-        }
-      } catch (error) {
-        console.error('Ошибка запроса:', error);
-        accessMessage.className = 'error';
-        accessMessage.innerHTML = '❌ Ошибка сети или сервера. Проверьте API.';
-        startButton.disabled = false;
-      }
-    });
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/search`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query, telegram_user_id: userId })
+                });
 
-    // Поиск
-    searchButton.addEventListener('click', async () => {
-      const query = queryInput.value.trim();
-      if (!query) {
-        resultOutput.className = 'error';
-        resultOutput.innerHTML = 'Введите запрос.';
-        return;
-      }
-
-      let userId = null;
-      if (window.Telegram && Telegram.WebApp.initDataUnsafe?.user) {
-        userId = Telegram.WebApp.initDataUnsafe.user.id;
-      }
-
-      if (!userId) {
-        resultOutput.className = 'error';
-        resultOutput.innerHTML = 'Ошибка авторизации: Не удалось получить ваш Telegram ID.';
-        return;
-      }
-
-      searchButton.disabled = true;
-      resultOutput.className = 'result';
-      resultOutput.innerHTML = 'Поиск...';
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/search`, {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({ query, telegram_user_id: userId })
+                const data = await res.json();
+                if (res.ok) {
+                    resultOutput.className = "result";
+                    resultOutput.innerHTML = data.result || "Нет данных.";
+                } else if (res.status === 403) {
+                    resultOutput.className = "error";
+                    resultOutput.innerHTML = "❌ Нет доступа.";
+                } else {
+                    resultOutput.className = "error";
+                    resultOutput.innerHTML = `❌ Ошибка ${res.status}: ${data.error || "Неизвестная ошибка."}`;
+                }
+            } catch (err) {
+                resultOutput.className = "error";
+                resultOutput.innerHTML = "⚠️ Ошибка сети или API.";
+            } finally {
+                searchButton.disabled = false;
+                searchButton.textContent = "ИСКАТЬ";
+            }
         });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          resultOutput.className = 'result';
-          resultOutput.innerHTML = data.result;
-        } else if (response.status === 403) {
-          resultOutput.className = 'error';
-          resultOutput.innerHTML = `🚫 Доступ запрещён. ${data.error || ''}`;
-        } else {
-          resultOutput.className = 'error';
-          resultOutput.innerHTML = `❌ Ошибка ${response.status}: ${data.error || 'Неизвестная ошибка.'}`;
-        }
-      } catch (err) {
-        console.error('Ошибка сети:', err);
-        resultOutput.className = 'error';
-        resultOutput.innerHTML = '❌ Ошибка сети или сервера.';
-      } finally {
-        searchButton.disabled = false;
-      }
-    });
-  </script>
+    </script>
 </body>
 </html>
