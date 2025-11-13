@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>HOGWARTS</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            margin: 0;
+            padding: 15px;
+            transition: background 0.3s ease;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        /* Вкладки */
+        .tabs {
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--tg-theme-hint-color);
+            user-select: none;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .tab.active {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            font-weight: 600;
+        }
+
+        /* Поле ввода */
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--tg-theme-hint-color);
+            background: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--tg-theme-button-color);
+        }
+
+        /* Кнопка */
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            cursor: pointer;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: 0.3s;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Результаты */
+        .result, .error {
+            white-space: pre-wrap;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 15px;
+            font-size: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .result {
+            background: var(--tg-theme-secondary-bg-color);
+        }
+
+        .error {
+            border: 1px solid var(--tg-theme-destructive-text-color);
+            color: var(--tg-theme-destructive-text-color);
+        }
+
+        .loader {
+            text-align: center;
+            padding: 15px;
+            color: var(--tg-theme-hint-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <h1>HOGWARTS 🔮</h1>
+
+    <div class="tabs">
+        <div class="tab active" data-type="iin">👤 ИИН</div>
+        <div class="tab" data-type="phone">📞 Телефон</div>
+        <div class="tab" data-type="fio">🧾 ФИО</div>
+        <div class="tab" data-type="address">🏠 Адрес</div>
+    </div>
+
+    <input type="text" id="queryInput" placeholder="Введите ИИН...">
+    <button id="searchButton">ИСКАТЬ</button>
+
+    <div id="resultOutput" class="result">Здесь появится результат.</div>
+
+    <script>
+        const API_BASE_URL = "https://test-2-tkqp.onrender.com";
+        const queryInput = document.getElementById('queryInput');
+        const searchButton = document.getElementById('searchButton');
+        const resultOutput = document.getElementById('resultOutput');
+        const tabs = document.querySelectorAll('.tab');
+        let currentType = 'iin';
+
+        // Telegram init
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+        }
+
+        // Переключение вкладок
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentType = tab.dataset.type;
+                resultOutput.innerHTML = "Здесь появится результат.";
+
+                switch (currentType) {
+                    case 'iin': queryInput.placeholder = "Введите ИИН..."; break;
+                    case 'phone': queryInput.placeholder = "Введите номер телефона..."; break;
+                    case 'fio': queryInput.placeholder = "Введите ФИО..."; break;
+                    case 'address': queryInput.placeholder = "Введите адрес..."; break;
+                }
+            });
+        });
+
+        // Поиск
+        searchButton.addEventListener('click', async () => {
+            const query = queryInput.value.trim();
+            if (!query) {
+                resultOutput.className = 'error';
+                resultOutput.innerHTML = 'Введите запрос.';
+                return;
+            }
+
+            let userId = null;
+            if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+                userId = Telegram.WebApp.initDataUnsafe.user.id;
+            }
+
+            if (!userId) {
+                resultOutput.className = 'error';
+                resultOutput.innerHTML = 'Ошибка авторизации.';
+                return;
+            }
+
+            resultOutput.className = 'loader';
+            resultOutput.innerHTML = '🔍 Поиск...';
+            searchButton.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/search`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: query,
+                        telegram_user_id: userId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultOutput.className = 'result';
+                    resultOutput.innerHTML = data.result;
+                } else if (response.status === 403) {
+                    resultOutput.className = 'error';
+                    resultOutput.innerHTML = `❌ ДОСТУП ЗАПРЕЩЕН: ${data.error}`;
+                } else {
+                    resultOutput.className = 'error';
+                    resultOutput.innerHTML = `❌ Ошибка: ${data.error || 'Неизвестная ошибка.'}`;
+                }
+
+            } catch (err) {
+                resultOutput.className = 'error';
+                resultOutput.innerHTML = '❌ Ошибка соединения с сервером.';
+            } finally {
+                searchButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
