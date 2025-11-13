@@ -171,7 +171,7 @@
       accessMessage.innerHTML = 'Проверка доступа...';
 
       let userId = null;
-      if (window.Telegram && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+      if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) {
         userId = Telegram.WebApp.initDataUnsafe.user.id;
       }
 
@@ -185,14 +185,21 @@
       try {
         const response = await fetch(`${API_BASE_URL}/api/check_access`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors', // важно
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({ telegram_user_id: userId })
         });
 
+        if (!response.ok) {
+          throw new Error(`Ошибка ${response.status}`);
+        }
+
         const data = await response.json();
 
-        if (response.ok && data.access === true) {
-          // Плавное исчезновение экрана доступа
+        if (data.access === true) {
           accessContainer.classList.add('fade');
           setTimeout(() => {
             accessContainer.classList.add('hidden');
@@ -204,8 +211,9 @@
           startButton.disabled = false;
         }
       } catch (error) {
+        console.error('Ошибка запроса:', error);
         accessMessage.className = 'error';
-        accessMessage.innerHTML = '❌ Ошибка сети или сервера.';
+        accessMessage.innerHTML = '❌ Ошибка сети или сервера. Проверьте API.';
         startButton.disabled = false;
       }
     });
@@ -220,7 +228,7 @@
       }
 
       let userId = null;
-      if (window.Telegram && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+      if (window.Telegram && Telegram.WebApp.initDataUnsafe?.user) {
         userId = Telegram.WebApp.initDataUnsafe.user.id;
       }
 
@@ -237,7 +245,11 @@
       try {
         const response = await fetch(`${API_BASE_URL}/api/search`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({ query, telegram_user_id: userId })
         });
 
@@ -254,6 +266,7 @@
           resultOutput.innerHTML = `❌ Ошибка ${response.status}: ${data.error || 'Неизвестная ошибка.'}`;
         }
       } catch (err) {
+        console.error('Ошибка сети:', err);
         resultOutput.className = 'error';
         resultOutput.innerHTML = '❌ Ошибка сети или сервера.';
       } finally {
